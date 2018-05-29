@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8F25939B-7E31-4CFE-B06B-1831461F3921}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TestTTS</RootNamespace>
-    <AssemblyName>TestTTS</AssemblyName>
+    <RootNamespace>CustomSoundBoard</RootNamespace>
+    <AssemblyName>CustomSoundBoard</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -61,9 +61,6 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="ScriptCs.Contracts, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ScriptCs.Contracts.0.4.0\lib\net45\ScriptCs.Contracts.dll</HintPath>
-    </Reference>
-    <Reference Include="ScriptCS.SpeakR, Version=0.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ScriptCS.SpeakR.0.2.1\lib\net45\ScriptCS.SpeakR.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
