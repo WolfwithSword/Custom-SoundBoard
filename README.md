@@ -48,3 +48,9 @@ To add new sounds, click the 'Add' button on the top left. To stop a currently p
 To remove buttons or edit the name/image/sound, right click the button and a context menu will appear.
 
 
+Setting Global Hotkeys
+
+You can set up to 10 global hot keys, which are accessed via ALT+(0-9). Additionally, There is a global hotkey for stopping sounds Alt+E.
+
+![alt-text](https://i.imgur.com/c9blF86.png)
+
