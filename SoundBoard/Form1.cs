@@ -64,12 +64,17 @@ namespace SoundBoardTest
             this.updateSoundGrid();
             soundPanel.Focus();
             this.generateGlobalKeys();
-            stopSoundGlobal = new GlobalHotKey(GlobalHotKey.CTRL, Keys.E, this);
+            stopSoundGlobal = new GlobalHotKey(GlobalHotKey.ALT, Keys.E, this);
             stopSoundGlobal.Register();
         }
 
         private void hotkeyPressed(Keys key)
         {
+            if(key == Keys.E)
+            {
+                WaveOut_PlaybackStopped(null, null);
+                return;
+            }
             if (!globalButtonRltn.ContainsKey(key)) return;
             int button_index = globalButtonRltn[key];
             if(button_index < sbButtons.Count && button_index >=0) playSound(sbButtons[button_index].soundPath);  
@@ -94,7 +99,7 @@ namespace SoundBoardTest
                 {
                     split = line.Split(',');
                     k = (Keys)Enum.Parse(typeof(Keys), "D" + split[1]);
-                    ghk = new GlobalHotKey(GlobalHotKey.CTRL, k, this);
+                    ghk = new GlobalHotKey(GlobalHotKey.ALT, k, this);
                     ghk.Register();
                     globalHotKeys.Add(ghk);
                     globalButtonRltn[k] = int.Parse(split[0]);
@@ -151,7 +156,7 @@ namespace SoundBoardTest
 
                     foreach (char s in number.ToCharArray())
                     {
-                        keyindex.Add((Keys)Enum.Parse(typeof(Keys), "NumPad" + s));
+                        keyindex.Add((Keys)Enum.Parse(typeof(Keys), "D" + s));
                     }
                     hotkeys.Add(new HotKeyGesture(keyindex, Keys.Control));
 
@@ -252,7 +257,7 @@ namespace SoundBoardTest
             {
                 foreach (char s in number.ToCharArray())
                 {
-                    keyindex.Add((Keys)Enum.Parse(typeof(Keys), "NumPad" + s));
+                    keyindex.Add((Keys)Enum.Parse(typeof(Keys), "D" + s));
                 }
             }
             hotkeys.Add(new HotKeyGesture(keyindex, Keys.Control));
@@ -277,7 +282,7 @@ namespace SoundBoardTest
                         foreach (Keys k in hk.keyCombo)
                         {
                             // Number keys are enumerated like D0, D1, D2 ... D9
-                            index += k.ToString().Replace("NumPad", "");
+                            index += k.ToString().Replace("D", "");
                         }
                         int i = int.Parse(index) - 1;
                         string path = sbButtons[i].soundPath;
