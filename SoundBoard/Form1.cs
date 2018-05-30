@@ -121,7 +121,29 @@ namespace SoundBoardTest
             globalButtonRltn[key] = button_index;
             updateGlobalKeyFile();
         }
-
+        private void viewButtonInfo(object sender, EventArgs e)
+        {
+            selected_button = ((sender as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
+            String info = "Name: " + selected_button.Text + System.Environment.NewLine +
+                            "Sound Src: " + selected_button.soundPath + System.Environment.NewLine +
+                            "Image Src: " + (String.IsNullOrEmpty(selected_button.imagePath) ? "" : selected_button.imagePath) 
+                            + System.Environment.NewLine +
+                            "HotKeys: { Local : " + "CTRL+" + (sbButtons.IndexOf(selected_button) + 1) +
+                            (globalButtonRltn.ContainsValue(sbButtons.IndexOf(selected_button)) ? " , Global : ALT+"
+                            +getGlobalKeyFromButton(selected_button)+"}": "}");
+            MessageBox.Show(info);
+        }
+        private String getGlobalKeyFromButton(SoundButton button)
+        {
+            foreach(Keys k in globalButtonRltn.Keys)
+            {
+                if(globalButtonRltn[k].Equals(sbButtons.IndexOf(button)))
+                {
+                    return k.ToString().Replace("D", ""); ;
+                }
+            }
+            return "Unknown";
+        }
         // Create buttons from text file. 
         private void generateButtons()
         {
@@ -193,7 +215,7 @@ namespace SoundBoardTest
         // Edit the name of a sound.
         private void editSound_Click(object sender, EventArgs e)
         {
-            selected_button = ((sender as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
+            selected_button = (((sender as MenuItem).Parent as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
             if (selected_button == null) return;
 
             string name;
@@ -208,7 +230,7 @@ namespace SoundBoardTest
         // Edit the source of a sound.
         private void editSoundPath_Click(object sender, EventArgs e)
         {
-            selected_button = ((sender as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
+            selected_button = (((sender as MenuItem).Parent as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
             if (selected_button == null) return;
             string path;
             OpenFileDialog fileDialog = new OpenFileDialog();
@@ -355,10 +377,13 @@ namespace SoundBoardTest
             setGlobalHK.MenuItems.Add("D8", setGHK);
             setGlobalHK.MenuItems.Add("D9", setGHK);
             setGlobalHK.MenuItems.Add("D0", setGHK);
+            menu.MenuItems.Add("View Info", viewButtonInfo);
             menu.MenuItems.Add(setGlobalHK);
-            menu.MenuItems.Add("Edit Name", editSound_Click);
-            menu.MenuItems.Add("Edit Sound", editSoundPath_Click);
-            menu.MenuItems.Add("Edit Image", editImgBtn_Click);
+            MenuItem editMenu = new MenuItem("Edit...");
+            editMenu.MenuItems.Add("Edit Name", editSound_Click);
+            editMenu.MenuItems.Add("Edit Sound", editSoundPath_Click);
+            editMenu.MenuItems.Add("Edit Image", editImgBtn_Click);
+            menu.MenuItems.Add(editMenu);
             menu.MenuItems.Add("Remove Image", removeImg_Click);
             menu.MenuItems.Add("Remove", removeSound_Click);
             
@@ -459,7 +484,7 @@ namespace SoundBoardTest
 
         private void editImgBtn_Click(object sender, EventArgs e)
         {
-            selected_button = ((sender as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
+            selected_button = (((sender as MenuItem).Parent as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
             if (selected_button == null) return;
             string imagePath;
             OpenFileDialog fileDialog = new OpenFileDialog();
@@ -497,8 +522,9 @@ namespace SoundBoardTest
             MessageBox.Show("SoundBoard" + Environment.NewLine +
                             Environment.NewLine + "WolfwithSword | https://github.com/WolfwithSword" +
                             Environment.NewLine + Environment.NewLine+ "HotKeys:" +
-                            Environment.NewLine + "· Ctrl + E : Stop current playing sound" +
-                            Environment.NewLine + "· Ctrl + ### : Play the ### sound (or closest matching #)",
+                            Environment.NewLine + "· Ctrl + E (Global: Alt + E) : Stop current playing sound" +
+                            Environment.NewLine + "· Ctrl + ### : Play the ### sound (or closest matching #)"+
+                            Environment.NewLine + "· Alt + (0-9) : Play a sound globally (requires manual setting)",                            
                             "Info",
                             MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
         }
