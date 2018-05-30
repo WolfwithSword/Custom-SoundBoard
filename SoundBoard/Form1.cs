@@ -10,6 +10,7 @@ using System.IO;
 using System.Media;
 using System.Windows.Forms;
 using Microsoft.VisualBasic;
+using System.Runtime.InteropServices;
 
 namespace SoundBoardTest
 {
@@ -20,19 +21,26 @@ namespace SoundBoardTest
         // [name],[audio_source],[optional_image_source]
         string DATA_FILE = "soundboard.dat";
 
+        //Format:
+        // [button index],[HotKey key 0-9]
+        string GLOBAL_HOTKEY_FILE = "globalhotkeys.dat";
+
         WaveOut waveOut;
         WaveStream waveStream;
         SoundButton selected_button;
-
+        
         List<SoundButton> sbButtons = new List<SoundButton>();
 
         private List<HotKeyGesture> hotkeys = new List<HotKeyGesture>();
 
         private HotKeyGesture stopSound = new HotKeyGesture(new List<Keys>() { Keys.E }, Keys.Control); // End
 
+        private GlobalHotKey stopSoundGlobal;
+
         private ContextMenu menu = new ContextMenu();
 
-
+        private List<GlobalHotKey> globalHotKeys = new List<GlobalHotKey>();
+        private Dictionary<Keys, int> globalButtonRltn = new Dictionary<Keys, int>();
         public SoundBoard()
         {
             if (!File.Exists(DATA_FILE))
@@ -40,10 +48,73 @@ namespace SoundBoardTest
                 File.Create(DATA_FILE).Close();
                 File.SetAttributes(DATA_FILE, FileAttributes.Normal);
             }
+            if(!File.Exists(GLOBAL_HOTKEY_FILE))
+            {
+                using (StreamWriter writer = new StreamWriter(GLOBAL_HOTKEY_FILE))
+                {
+                    for(int i=0; i<10; i++)
+                    {
+                        writer.WriteLine("-1," + i);
+                    }
+                }
+                    File.SetAttributes(GLOBAL_HOTKEY_FILE, FileAttributes.Normal);
+            }
             this.InitializeComponent();
             this.generateButtons();
             this.updateSoundGrid();
             soundPanel.Focus();
+            this.generateGlobalKeys();
+            stopSoundGlobal = new GlobalHotKey(GlobalHotKey.CTRL, Keys.E, this);
+            stopSoundGlobal.Register();
+        }
+
+        private void hotkeyPressed(Keys key)
+        {
+            if (!globalButtonRltn.ContainsKey(key)) return;
+            int button_index = globalButtonRltn[key];
+            if(button_index < sbButtons.Count && button_index >=0) playSound(sbButtons[button_index].soundPath);  
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == GlobalHotKey.WM_HOTKEY_MSG_ID)
+                hotkeyPressed( (Keys) ((m.LParam.ToInt32())>>16) );
+            base.WndProc(ref m);
+        }
+
+        private void generateGlobalKeys()
+        {
+            using (StreamReader file = new StreamReader(GLOBAL_HOTKEY_FILE))
+            {
+                string line;
+                Keys k;
+                string[] split;
+                GlobalHotKey ghk;
+                while((line=file.ReadLine()) != null)
+                {
+                    split = line.Split(',');
+                    k = (Keys)Enum.Parse(typeof(Keys), "D" + split[1]);
+                    ghk = new GlobalHotKey(GlobalHotKey.CTRL, k, this);
+                    ghk.Register();
+                    globalHotKeys.Add(ghk);
+                    globalButtonRltn[k] = int.Parse(split[0]);
+                }
+            }
+        }
+        private void updateGlobalKeyFile()
+        {
+            using (StreamWriter file = new StreamWriter(GLOBAL_HOTKEY_FILE, false))
+            {
+                foreach(GlobalHotKey ghk in globalHotKeys)
+                {
+                    file.WriteLine(globalButtonRltn[ghk.key] + "," + ghk.key.ToString().Replace("D", ""));
+                }
+            }
+        }
+        private void changeGlobalHotKey(Keys key, int button_index)
+        {
+            globalButtonRltn[key] = button_index;
+            updateGlobalKeyFile();
         }
 
         // Create buttons from text file. 
@@ -80,9 +151,12 @@ namespace SoundBoardTest
 
                     foreach (char s in number.ToCharArray())
                     {
-                        keyindex.Add((Keys)Enum.Parse(typeof(Keys), "D" + s));
+                        keyindex.Add((Keys)Enum.Parse(typeof(Keys), "NumPad" + s));
                     }
                     hotkeys.Add(new HotKeyGesture(keyindex, Keys.Control));
+
+                    int id = hotkeys.Count;
+
                     count++;
                 }
             }
@@ -170,6 +244,7 @@ namespace SoundBoardTest
             button.MouseEnter += sbButton_Enter;
             button.MouseLeave += sbButton_Leave;
             button.AutoSize = false;
+            button.TabStop = false;
             sbButtons.Add(button);
             List<Keys> keyindex = new List<Keys>();
             string number = sbButtons.Count.ToString();
@@ -177,16 +252,16 @@ namespace SoundBoardTest
             {
                 foreach (char s in number.ToCharArray())
                 {
-                    keyindex.Add((Keys)Enum.Parse(typeof(Keys), "D" + s));
+                    keyindex.Add((Keys)Enum.Parse(typeof(Keys), "NumPad" + s));
                 }
             }
             hotkeys.Add(new HotKeyGesture(keyindex, Keys.Control));
+            
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-
             if (stopSound.Matches(e))
             {
                 WaveOut_PlaybackStopped(null, null);
@@ -202,7 +277,7 @@ namespace SoundBoardTest
                         foreach (Keys k in hk.keyCombo)
                         {
                             // Number keys are enumerated like D0, D1, D2 ... D9
-                            index += k.ToString().Replace("D", "");
+                            index += k.ToString().Replace("NumPad", "");
                         }
                         int i = int.Parse(index) - 1;
                         string path = sbButtons[i].soundPath;
@@ -264,13 +339,40 @@ namespace SoundBoardTest
         {
             fillPlayback();
             playbackDrop.SelectedIndex = 0;
+            MenuItem setGlobalHK = new MenuItem("Set Global HotKey");
+            setGlobalHK.MenuItems.Add("D1", setGHK);
+            setGlobalHK.MenuItems.Add("D2", setGHK);
+            setGlobalHK.MenuItems.Add("D3", setGHK);
+            setGlobalHK.MenuItems.Add("D4", setGHK);
+            setGlobalHK.MenuItems.Add("D5", setGHK);
+            setGlobalHK.MenuItems.Add("D6", setGHK);
+            setGlobalHK.MenuItems.Add("D7", setGHK);
+            setGlobalHK.MenuItems.Add("D8", setGHK);
+            setGlobalHK.MenuItems.Add("D9", setGHK);
+            setGlobalHK.MenuItems.Add("D0", setGHK);
+            menu.MenuItems.Add(setGlobalHK);
             menu.MenuItems.Add("Edit Name", editSound_Click);
             menu.MenuItems.Add("Edit Sound", editSoundPath_Click);
             menu.MenuItems.Add("Edit Image", editImgBtn_Click);
             menu.MenuItems.Add("Remove Image", removeImg_Click);
             menu.MenuItems.Add("Remove", removeSound_Click);
             
-            
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach(GlobalHotKey k in globalHotKeys)
+            {
+                k.Unregister();
+            }
+            stopSoundGlobal.Unregister();
+        }
+        private void setGHK(object sender, EventArgs e)
+        {
+            Keys key = (Keys)Enum.Parse(typeof(Keys), (sender as MenuItem).Text);
+            selected_button = (((sender as MenuItem).Parent as MenuItem).Parent as ContextMenu).SourceControl as SoundButton;
+            globalButtonRltn[key] = sbButtons.IndexOf(selected_button);
+            updateGlobalKeyFile();
         }
 
         // When soundboard sound stops. Cleans up memory.

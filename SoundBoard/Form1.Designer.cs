@@ -56,16 +56,19 @@ namespace SoundBoardTest
             this.playbackDrop.Name = "playbackDrop";
             this.playbackDrop.Size = new System.Drawing.Size(233, 29);
             this.playbackDrop.TabIndex = 11;
+            this.playbackDrop.TabStop = false;
             this.playbackDrop.UseSelectable = true;
             this.playbackDrop.DropDown += new System.EventHandler(this.updatePlayback);
             // 
             // volumeBar
             // 
             this.volumeBar.BackColor = System.Drawing.Color.Transparent;
+            this.volumeBar.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.volumeBar.Location = new System.Drawing.Point(118, 451);
             this.volumeBar.Name = "volumeBar";
             this.volumeBar.Size = new System.Drawing.Size(237, 19);
             this.volumeBar.TabIndex = 14;
+            this.volumeBar.TabStop = false;
             this.volumeBar.Text = "metroTrackBar1";
             this.volumeBar.Value = 100;
             this.volumeBar.ValueChanged += new System.EventHandler(this.volumeBar_Scroll);
@@ -78,6 +81,7 @@ namespace SoundBoardTest
             this.stopBtn.Name = "stopBtn";
             this.stopBtn.Size = new System.Drawing.Size(58, 23);
             this.stopBtn.TabIndex = 17;
+            this.stopBtn.TabStop = false;
             this.stopBtn.Text = "Stop";
             this.stopBtn.UseSelectable = true;
             this.stopBtn.Click += new System.EventHandler(this.stopBtn_Click);
@@ -117,6 +121,7 @@ namespace SoundBoardTest
             this.addSoundBtn.Name = "addSoundBtn";
             this.addSoundBtn.Size = new System.Drawing.Size(57, 23);
             this.addSoundBtn.TabIndex = 4;
+            this.addSoundBtn.TabStop = false;
             this.addSoundBtn.Text = "Add";
             this.addSoundBtn.UseSelectable = true;
             this.addSoundBtn.Click += new System.EventHandler(this.addSound_Click);
@@ -188,6 +193,7 @@ namespace SoundBoardTest
             this.Style = MetroFramework.MetroColorStyle.Default;
             this.Text = "SoundBoard";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.FormClosing += this.Form1_FormClosing;
             this.metroPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
